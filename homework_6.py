@@ -1,11 +1,13 @@
 import os
 import shutil
+import sys
 
 def normalize(text):
     translit_table = {
-        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'h', 'ґ': 'g', 'д': 'd', 'е': 'e', 'є': 'ie', 'ж': 'zh', 'з': 'z', 'и': 'y', 'і': 'i',
-        'ї': 'i', 'й': 'i', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
-        'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ь': '', 'ю': 'iu', 'я': 'ia'
+        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'h', 'ґ': 'g', 'д': 'd', 'е': 'e', 'є': 'ie', 'ж': 'zh', 'з': 'z',
+        'и': 'y', 'і': 'i', 'ї': 'i', 'й': 'i', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o',
+        'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch',
+        'ш': 'sh', 'щ': 'shch', 'ь': '', 'ю': 'iu', 'я': 'ia'
     }
 
     result = []
@@ -67,13 +69,12 @@ def process_folder(folder_path):
                 shutil.unpack_archive(new_path, archive_folder)
                 os.remove(new_path)
     
-    # Виведемо результат
     print("Sorted files:")
-    for folder, files in folders.items():
+    for folder, folder_name in folders.items():
         if folder != 'archives':
-            folder_path = os.path.join(folder_path, files)
-            if os.path.exists(folder_path):
-                sorted_files = os.listdir(folder_path)
+            subfolder_path = os.path.join(folder_path, folder_name)
+            if os.path.exists(subfolder_path):
+                sorted_files = os.listdir(subfolder_path)
                 if sorted_files:
                     print(f"{folder}: {sorted_files}")
                 else:
@@ -88,6 +89,12 @@ def process_folder(folder_path):
     print("\nUnknown extensions:")
     print(list(unknown_ext))
 
-# Приклад використання:
-folder_to_sort = './path_to_folder'
-process_folder(folder_to_sort)
+def main():
+    if len(sys.argv) >= 2:
+        folder_to_sort = sys.argv[1]
+    else:
+        folder_to_sort = input("Write path to folder: ")
+    process_folder(folder_to_sort)
+
+if __name__ == "__main__":
+    main()
