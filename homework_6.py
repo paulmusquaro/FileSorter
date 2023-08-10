@@ -39,16 +39,19 @@ def process_folder(folder_path):
     }
     
     for item in os.listdir(folder_path):
+        print(f"Item {item}")
         item_path = os.path.join(folder_path, item)
-        
+        print(f"Item_path {item_path}")
         if os.path.isdir(item_path):
             if item not in folders.values():
                 process_folder(item_path)
         else:
             base_name, ext = os.path.splitext(item)
+            print(f"base_name {base_name} ext {ext}")
             new_name = normalize(base_name) + ext
+            print(f"new_name {new_name}")
             new_path = os.path.join(folder_path, new_name)
-            
+            print(f"new_path {new_path}")
             os.rename(item_path, new_path)
             
             if ext not in extensions:
@@ -56,25 +59,33 @@ def process_folder(folder_path):
             extensions[ext].append(new_name)
             
             if ext.lower() in images_ext:
-                shutil.move(new_path, os.path.join(folder_path, folders['images'], new_name))
+                if not os.path.exists(os.path.join(folder_path, folders['images'])):
+                    os.mkdir(os.path.join(folder_path, folders['images']))
+                os.rename(new_path, os.path.join(folder_path, folders['images'], new_name))
             elif ext.lower() in videos_ext:
-                shutil.move(new_path, os.path.join(folder_path, folders['videos'], new_name))
+                if not os.path.exists(os.path.join(folder_path, folders['videos'])):
+                    os.mkdir(os.path.join(folder_path, folders['videos']))
+                os.rename(new_path, os.path.join(folder_path, folders['videos'], new_name))
             elif ext.lower() in documents_ext:
-                shutil.move(new_path, os.path.join(folder_path, folders['documents'], new_name))
+                if not os.path.exists(os.path.join(folder_path, folders['documents'])):
+                    os.mkdir(os.path.join(folder_path, folders['documents']))
+                os.rename(new_path, os.path.join(folder_path, folders['documents'], new_name))
             elif ext.lower() in music_ext:
-                shutil.move(new_path, os.path.join(folder_path, folders['music'], new_name))
+                if not os.path.exists(os.path.join(folder_path, folders['music'])):
+                    os.mkdir(os.path.join(folder_path, folders['music']))
+                os.rename(new_path, os.path.join(folder_path, folders['music'], new_name))
             elif ext.lower() in archives_ext:
                 archive_folder = os.path.join(folder_path, folders['archives'], os.path.splitext(new_name)[0])
                 os.makedirs(archive_folder, exist_ok=True)
-                shutil.unpack_archive(new_path, archive_folder)
+                shutil.unpack_archive(item_path, archive_folder)
                 os.remove(new_path)
     
     print("Sorted files:")
-    for folder, folder_name in folders.items():
+    for folder, files in folders.items():
         if folder != 'archives':
-            subfolder_path = os.path.join(folder_path, folder_name)
-            if os.path.exists(subfolder_path):
-                sorted_files = os.listdir(subfolder_path)
+            folder_path = os.path.join(folder_path, files)
+            if os.path.exists(folder_path):
+                sorted_files = os.listdir(folder_path)
                 if sorted_files:
                     print(f"{folder}: {sorted_files}")
                 else:
@@ -83,9 +94,17 @@ def process_folder(folder_path):
     print("\nKnown extensions:")
     for ext, files in extensions.items():
         print(f"{ext}: {files}")
-    
-    unknown_ext = set(os.path.splitext(f)[1].lower() for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f)))
+
+    unknown_ext = set()
+    if os.path.exists(folder_path):
+        for f in os.listdir(folder_path):
+            try:
+                if os.path.isfile(os.path.join(folder_path, f)):
+                    unknown_ext.add(os.path.splitext(f)[1].lower())
+            except FileNotFoundError:
+                continue
     unknown_ext -= set(extensions.keys())
+
     print("\nUnknown extensions:")
     print(list(unknown_ext))
 
