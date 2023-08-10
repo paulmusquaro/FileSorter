@@ -117,3 +117,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+else:
+    print("That's not module! Don't use it in this way")
